@@ -15,6 +15,49 @@
     <vbox.sdk.path>/home/anton/vboxsdk/sdk/</vbox.sdk.path>
   </properties>
 
+  <profiles>
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <vbox.sdk.jar>vboxjmscom.jar</vbox.sdk.jar>
+      </properties>
+	  <dependencies>
+		<dependency>
+	      <groupId>net.sf.jacob-project</groupId>
+	      <artifactId>jacob</artifactId>
+	      <version>1.14.3</version>
+	    </dependency>
+	  </dependencies>
+    </profile>
+    <profile>
+      <id>unix</id>
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <vbox.sdk.jar>vboxjxpcom.jar</vbox.sdk.jar>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <vbox.sdk.jar>vboxjxpcom.jar</vbox.sdk.jar>
+      </properties>
+    </profile>
+  </profiles>
+
   <dependencies>
       <dependency>
           <groupId>org.apache.ant</groupId>
@@ -31,7 +74,7 @@
           <artifactId>virtualbox-sdk</artifactId>
           <version>4.1</version>
           <scope>system</scope>
-          <systemPath>${vbox.sdk.path}/bindings/xpcom/java/vboxjxpcom.jar</systemPath>
+          <systemPath>${vbox.sdk.path}/bindings/xpcom/java/${vbox.sdk.jar}</systemPath>
       </dependency>
   </dependencies>
 </project>
