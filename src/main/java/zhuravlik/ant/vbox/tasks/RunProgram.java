@@ -19,10 +19,7 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.ExecuteProcessFlag;
-import org.virtualbox_4_1.Holder;
-import org.virtualbox_4_1.IConsole;
-import org.virtualbox_4_1.IProgress;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
@@ -84,13 +81,20 @@ public class RunProgram extends VboxAction {
     }
 
     @Override
-    public void executeAction(IConsole console) {
+    public void executeAction(IMachine machine, ISession session) {
+
+        if (session.getState() == SessionState.Unlocked)
+            machine.lockMachine(session, LockType.Shared);
+
         Holder<Long> hld = new Holder<Long>();
-        IProgress p = console.getGuest().executeProcess(path, 
+        IProgress p = session.getConsole().getGuest().executeProcess(path,
                 returnImmediately ? (long)ExecuteProcessFlag.WaitForProcessStartOnly.value() : (long)ExecuteProcessFlag.None.value(),
                 Arrays.asList(args.split(" ")), Arrays.asList(env.split(";")),
                 VboxTask.username, VboxTask.password, (long)timeout, hld);
         
         p.waitForCompletion(timeout);
+
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

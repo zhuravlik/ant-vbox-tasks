@@ -19,7 +19,7 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.IConsole;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
@@ -71,9 +71,16 @@ public class Login extends VboxAction {
     }
 
     @Override
-    public void executeAction(IConsole console) {
-        console.getGuest().setCredentials(user, password, domain, interactive);
+    public void executeAction(IMachine machine, ISession session) {
+
+        if (session.getState() == SessionState.Unlocked)
+            machine.lockMachine(session, LockType.Shared);
+
+        session.getConsole().getGuest().setCredentials(user, password, domain, interactive);
         VboxTask.username = user;
         VboxTask.password = password;
+
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

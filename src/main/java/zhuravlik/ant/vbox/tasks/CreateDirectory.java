@@ -21,6 +21,8 @@ package zhuravlik.ant.vbox.tasks;
 
 import org.virtualbox_4_1.DirectoryCreateFlag;
 import org.virtualbox_4_1.IConsole;
+import org.virtualbox_4_1.IMachine;
+import org.virtualbox_4_1.ISession;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
@@ -53,7 +55,8 @@ public class CreateDirectory extends VboxAction {
     }
 
     @Override
-    public void executeAction(IConsole console) {
-        console.getGuest().directoryCreate(path, VboxTask.username, VboxTask.password, (long)mode, (long)DirectoryCreateFlag.Parents.value());
+    public void executeAction(IMachine machine, ISession session) {
+
+        session.getConsole().getGuest().directoryCreate(path, VboxTask.username, VboxTask.password, (long) mode, (long) DirectoryCreateFlag.Parents.value());
     }
 }

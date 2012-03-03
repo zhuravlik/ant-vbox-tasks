@@ -19,9 +19,7 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.IConsole;
-import org.virtualbox_4_1.IProgress;
-import org.virtualbox_4_1.ISnapshot;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 
 /**
@@ -44,9 +42,17 @@ public class RevertToSnapshot extends VboxAction {
     }
 
     @Override
-    public void executeAction(IConsole console) {
-        ISnapshot snapshot = console.getMachine().findSnapshot(name);
-        IProgress p = console.restoreSnapshot(snapshot);
+    public void executeAction(IMachine machine, ISession session) {
+        ISnapshot snapshot = machine.findSnapshot(name);
+
+        if (session.getState() == SessionState.Unlocked)
+            machine.lockMachine(session, LockType.Shared);
+
+        IProgress p = session.getConsole().restoreSnapshot(snapshot);
         p.waitForCompletion(-1);
+
+
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

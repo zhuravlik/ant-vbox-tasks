@@ -19,8 +19,7 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.IConsole;
-import org.virtualbox_4_1.IProgress;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 
 /**
@@ -33,10 +32,33 @@ import zhuravlik.ant.vbox.VboxAction;
 public class TakeSnapshot extends VboxAction {
     String name;
     String description;
-    
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
-    public void executeAction(IConsole console) {
-        IProgress p = console.takeSnapshot(name, description);
+    public void executeAction(IMachine machine, ISession session) {
+
+        if (session.getState() != SessionState.Locked)
+            machine.lockMachine(session, LockType.Shared);
+
+        IProgress p = session.getConsole().takeSnapshot(name, description);
         p.waitForCompletion(-1);
+
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

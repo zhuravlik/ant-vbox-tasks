@@ -19,7 +19,7 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.IConsole;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 
 /**
@@ -32,7 +32,14 @@ import zhuravlik.ant.vbox.VboxAction;
 public class Logout extends VboxAction {
 
     @Override
-    public void executeAction(IConsole console) {
-        console.getGuest().setCredentials("", "", "", false);
+    public void executeAction(IMachine machine, ISession session) {
+
+        if (session.getState() == SessionState.Unlocked)
+            machine.lockMachine(session, LockType.Shared);
+
+        session.getConsole().getGuest().setCredentials("", "", "", false);
+
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

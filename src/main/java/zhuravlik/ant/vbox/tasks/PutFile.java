@@ -19,8 +19,7 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.IConsole;
-import org.virtualbox_4_1.IProgress;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
@@ -63,8 +62,15 @@ public class PutFile extends VboxAction {
     }
 
     @Override
-    public void executeAction(IConsole console) {
-        IProgress p = console.getGuest().copyToGuest(path, destination, VboxTask.username, VboxTask.password, (long)0);
+    public void executeAction(IMachine machine, ISession session) {
+
+        if (session.getState() == SessionState.Unlocked)
+            machine.lockMachine(session, LockType.Shared);
+
+        IProgress p = session.getConsole().getGuest().copyToGuest(path, destination, VboxTask.username, VboxTask.password, (long)0);
         p.waitForCompletion(timeout);
+
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

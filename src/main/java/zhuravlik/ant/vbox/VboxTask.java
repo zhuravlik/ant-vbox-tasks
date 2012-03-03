@@ -44,6 +44,7 @@ public class VboxTask extends Task {
     
     String name;
     String api_version;
+	String vbox_home;
 
     public String getName() {
         return name;
@@ -60,6 +61,14 @@ public class VboxTask extends Task {
     public void setApi_version(String api_version) {
         this.api_version = api_version;
     }
+
+	public String getVbox_home() {
+		return vbox_home;
+	}
+
+	public void setVbox_home(String home) {
+		this.vbox_home = home;
+	}
 
     public void addCreateDirectory(CreateDirectory createDirectory) {
         actions.add(createDirectory);
@@ -106,6 +115,9 @@ public class VboxTask extends Task {
     }
     
     public void execute() throws BuildException {
+
+		if (vbox_home != null)
+			System.setProperty("vbox.home", vbox_home);
         
         versionPrefix = "org.virtualbox_" + api_version.replaceAll("\\.", "_");
 
@@ -125,12 +137,11 @@ public class VboxTask extends Task {
         if (neededVM == null)
             throw new BuildException("Virtual machine [" + name + "] cannot be found");
 
-        neededVM.lockMachine(session, LockType.Write);
-
         for (VboxAction action: actions) {
-            action.executeAction(session.getConsole());
+            action.executeAction(neededVM, session);
         }
 
-        session.unlockMachine();
+        if (session.getState() == SessionState.Locked)
+            session.unlockMachine();
     }
 }

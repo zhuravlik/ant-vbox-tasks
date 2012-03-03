@@ -19,8 +19,8 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.IConsole;
-import org.virtualbox_4_1.IProgress;
+import org.apache.tools.ant.BuildException;
+import org.virtualbox_4_1.*;
 import zhuravlik.ant.vbox.VboxAction;
 
 /**
@@ -33,6 +33,8 @@ import zhuravlik.ant.vbox.VboxAction;
 public class PowerOn extends VboxAction {
     
     int timeout = 10000;
+    String type;
+    String env;
 
     public int getTimeout() {
         return timeout;
@@ -42,8 +44,31 @@ public class PowerOn extends VboxAction {
         this.timeout = timeout;
     }
 
-    public void executeAction(IConsole console) {
-        IProgress p = console.powerUp();
-        p.waitForCompletion(timeout);
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
+    }
+
+    public void executeAction(IMachine machine, ISession session) {
+        if (machine == null)
+            throw new BuildException("No machine associated with session found");
+
+        IProgress p = machine.launchVMProcess(session, type, env);
+
+        //IProgress p = console.powerUp();
+        p.waitForCompletion(-1);
+
+        //machine.lockMachine(session, LockType.Shared);
     }
 }
