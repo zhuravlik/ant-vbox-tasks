@@ -19,9 +19,12 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.*;
+import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
+
+import static zhuravlik.ant.vbox.reflection.Fields.*;
+import static zhuravlik.ant.vbox.reflection.Methods.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -62,15 +65,33 @@ public class PutFile extends VboxAction {
     }
 
     @Override
-    public void executeAction(IMachine machine, ISession session) {
+    public void executeAction(Object machine, Object session) {
 
-        if (session.getState() == SessionState.Unlocked)
+        try {
+            if (getSessionStateMethod.invoke(session) == unlockedStateField.get(null))
+                lockMachineMethod.invoke(machine, session, writeLockField.get(null));
+
+            Object console = getConsoleMethod.invoke(session);
+            Object guest = getGuestMethod.invoke(console);
+
+            Object p = copyToGuestMethod.invoke(guest, path, destination, VboxTask.username, VboxTask.password, (long)0);
+            waitForCompletionMethod.invoke(p, -1);
+
+
+            if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                unlockMachineMethod.invoke(session);
+        }
+        catch (Exception e) {
+            throw new BuildException(e);
+        }
+
+        /*if (session.getState() == SessionState.Unlocked)
             machine.lockMachine(session, LockType.Shared);
 
         IProgress p = session.getConsole().getGuest().copyToGuest(path, destination, VboxTask.username, VboxTask.password, (long)0);
-        p.waitForCompletion(timeout);
+        p.waitForCompletion(-1);
 
         if (session.getState() == SessionState.Locked)
-            session.unlockMachine();
+            session.unlockMachine();*/
     }
 }

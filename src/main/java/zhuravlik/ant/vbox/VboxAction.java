@@ -20,9 +20,6 @@
 package zhuravlik.ant.vbox;
 
 import org.apache.tools.ant.ProjectComponent;
-import org.virtualbox_4_1.IConsole;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.ISession;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,5 +29,5 @@ import org.virtualbox_4_1.ISession;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class VboxAction extends ProjectComponent {
-    public abstract void executeAction(IMachine machine, ISession session);
+    public abstract void executeAction(Object machine, Object session);
 }

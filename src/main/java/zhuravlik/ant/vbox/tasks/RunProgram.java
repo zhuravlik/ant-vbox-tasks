@@ -19,11 +19,15 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.*;
+import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
 import java.util.Arrays;
+
+import static zhuravlik.ant.vbox.reflection.Classes.holderClass;
+import static zhuravlik.ant.vbox.reflection.Fields.*;
+import static zhuravlik.ant.vbox.reflection.Methods.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -81,9 +85,39 @@ public class RunProgram extends VboxAction {
     }
 
     @Override
-    public void executeAction(IMachine machine, ISession session) {
+    public void executeAction(Object machine, Object session) {
 
-        if (session.getState() == SessionState.Unlocked)
+        try {
+            if (getSessionStateMethod.invoke(session) == unlockedStateField.get(null))
+                lockMachineMethod.invoke(machine, session, sharedLockField.get(null));
+
+            Object console = getConsoleMethod.invoke(session);
+            Object guest = getGuestMethod.invoke(console);
+
+            Object hld = holderClass.newInstance();
+
+            long flag = returnImmediately ?
+                            (Long)executeProcessFlagEnumValueMethod.invoke(
+                                    waitForProcessStartOnlyField.get(null)
+                            ) :
+                            (Long)executeProcessFlagEnumValueMethod.invoke(
+                                    waitForNoneField.get(null)
+                            );
+
+            Object p = executeProcessMethod.invoke(guest, path,
+                    flag,
+                    Arrays.asList(args.split(" ")), Arrays.asList(env.split(";")),
+                    VboxTask.username, VboxTask.password, (long)timeout, hld);
+            waitForCompletionMethod.invoke(p, -1);
+
+            if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                unlockMachineMethod.invoke(session);
+        }
+        catch (Exception e) {
+            throw new BuildException(e);
+        }
+        
+        /*if (session.getState() == SessionState.Unlocked)
             machine.lockMachine(session, LockType.Shared);
 
         Holder<Long> hld = new Holder<Long>();
@@ -95,6 +129,6 @@ public class RunProgram extends VboxAction {
         p.waitForCompletion(timeout);
 
         if (session.getState() == SessionState.Locked)
-            session.unlockMachine();
+            session.unlockMachine();    */
     }
 }

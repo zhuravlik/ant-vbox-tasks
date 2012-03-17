@@ -19,8 +19,11 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.*;
+import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
+
+import static zhuravlik.ant.vbox.reflection.Fields.*;
+import static zhuravlik.ant.vbox.reflection.Methods.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,14 +35,30 @@ import zhuravlik.ant.vbox.VboxAction;
 public class Logout extends VboxAction {
 
     @Override
-    public void executeAction(IMachine machine, ISession session) {
+    public void executeAction(Object machine, Object session) {
+        try {
+            if (getSessionStateMethod.invoke(session) == unlockedStateField.get(null))
+                lockMachineMethod.invoke(machine, session, sharedLockField.get(null));
 
-        if (session.getState() == SessionState.Unlocked)
+            Object console = getConsoleMethod.invoke(session);
+            Object guest = getGuestMethod.invoke(console);
+
+            setCredentialsMethod.invoke(guest, "", "", "", false);
+
+
+            if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                unlockMachineMethod.invoke(session);
+        }
+        catch (Exception e) {
+            throw new BuildException(e);
+        }
+
+        /*if (session.getState() == SessionState.Unlocked)
             machine.lockMachine(session, LockType.Shared);
 
         session.getConsole().getGuest().setCredentials("", "", "", false);
 
         if (session.getState() == SessionState.Locked)
-            session.unlockMachine();
+            session.unlockMachine();*/
     }
 }

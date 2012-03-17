@@ -19,8 +19,11 @@
 
 package zhuravlik.ant.vbox.tasks;
 
-import org.virtualbox_4_1.*;
+import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
+
+import static zhuravlik.ant.vbox.reflection.Fields.*;
+import static zhuravlik.ant.vbox.reflection.Methods.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,8 +54,31 @@ public class DeleteSnapshot extends VboxAction {
     }
 
     @Override
-    public void executeAction(IMachine machine, ISession session) {
-        ISnapshot snapshot = machine.findSnapshot(name);
+    public void executeAction(Object machine, Object session) {
+        try {
+            Object snapshot = findSnapshotMethod.invoke(machine, name);
+
+            if (getSessionStateMethod.invoke(session) == unlockedStateField.get(null))
+                lockMachineMethod.invoke(machine, session, sharedLockField.get(null));
+
+            Object console = getConsoleMethod.invoke(session);
+
+            String id = (String) getSnapshotIdMethod.invoke(snapshot);
+
+            Object p = withChildren ? deleteSnapshotAndAllChildrenMethod.invoke(console, id)
+                    : deleteSnapshotMethod.invoke(console, id);
+
+            waitForCompletionMethod.invoke(p, -1);
+
+            if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                unlockMachineMethod.invoke(session);
+
+        }
+        catch (Exception e) {
+            throw new BuildException(e);
+        }
+        
+        /*ISnapshot snapshot = machine.findSnapshot(name);
 
         if (session.getState() == SessionState.Unlocked)
             machine.lockMachine(session, LockType.Shared);
@@ -62,7 +88,7 @@ public class DeleteSnapshot extends VboxAction {
         p.waitForCompletion(-1);
 
         if (session.getState() == SessionState.Locked)
-            session.unlockMachine();
+            session.unlockMachine(); */
     }
 }
 

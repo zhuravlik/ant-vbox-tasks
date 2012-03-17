@@ -20,8 +20,12 @@
 package zhuravlik.ant.vbox.tasks;
 
 import org.apache.tools.ant.BuildException;
-import org.virtualbox_4_1.*;
+import org.virtualbox_4_1.IMachine;
+import org.virtualbox_4_1.IProgress;
 import zhuravlik.ant.vbox.VboxAction;
+
+import static zhuravlik.ant.vbox.reflection.Methods.launchVMProcessMethod;
+import static zhuravlik.ant.vbox.reflection.Methods.waitForCompletionMethod;
 
 /**
  * Created by IntelliJ IDEA.
@@ -60,15 +64,30 @@ public class PowerOn extends VboxAction {
         this.env = env;
     }
 
-    public void executeAction(IMachine machine, ISession session) {
+    public void executeAction(Object machine, Object session) throws BuildException {
         if (machine == null)
             throw new BuildException("No machine associated with session found");
 
-        IProgress p = machine.launchVMProcess(session, type, env);
+        try {
+
+            System.err.println(type == null);
+            System.err.println(env == null);
+            System.err.println(launchVMProcessMethod == null);
+
+            Object p = launchVMProcessMethod.invoke(machine, session, type, env);
+            waitForCompletionMethod.invoke(p, -1);
+        }
+        catch (Exception e) {
+            throw new BuildException(e);
+        }
+
+
+
+        /*IProgress p = machine.launchVMProcess(session, type, env);
 
         //IProgress p = console.powerUp();
         p.waitForCompletion(-1);
 
-        //machine.lockMachine(session, LockType.Shared);
+        //machine.lockMachine(session, LockType.Shared);*/
     }
 }

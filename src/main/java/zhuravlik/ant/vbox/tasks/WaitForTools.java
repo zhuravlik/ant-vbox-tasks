@@ -22,60 +22,76 @@ package zhuravlik.ant.vbox.tasks;
 import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 
+
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
 
 /**
  * Created by IntelliJ IDEA.
  * User: anton
- * Date: 29.01.12
- * Time: 10:35
+ * Date: 14.03.12
+ * Time: 16:25
  * To change this template use File | Settings | File Templates.
  */
-public class RevertToSnapshot extends VboxAction {
+public class WaitForTools extends VboxAction {
+    
+    int timeout;
 
-    String name;
-
-    public String getName() {
-        return name;
+    public int getTimeout() {
+        return timeout;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 
     @Override
     public void executeAction(Object machine, Object session) {
 
         try {
-            Object snapshot = findSnapshotMethod.invoke(machine, name);
-
             if (getSessionStateMethod.invoke(session) == unlockedStateField.get(null))
                 lockMachineMethod.invoke(machine, session, sharedLockField.get(null));
 
             Object console = getConsoleMethod.invoke(session);
+            Object guest = getGuestMethod.invoke(console);
 
-            Object p = restoreSnapshotMethod.invoke(console, snapshot);
-            waitForCompletionMethod.invoke(p, -1);
+            int i = 0;
+            
+            while (!(Boolean)getAdditionsStatusMethod.invoke(guest, additionsRunLevelDesktopField.get(null))
+                && i < timeout) {
+                try {Thread.sleep(1000);} catch (Exception e) {
+                    if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                        unlockMachineMethod.invoke(session);
+                    throw new BuildException(e.getMessage());
+                }
+                i++;
+            }
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
                 unlockMachineMethod.invoke(session);
-
         }
         catch (Exception e) {
             throw new BuildException(e);
         }
 
-        /*ISnapshot snapshot = machine.findSnapshot(name);
 
-        if (session.getState() == SessionState.Unlocked)
+        /*if (session.getState() == SessionState.Unlocked)
             machine.lockMachine(session, LockType.Shared);
 
-        IProgress p = session.getConsole().restoreSnapshot(snapshot);
-        p.waitForCompletion(-1);
+
+        int i = 0;
+        while (!session.getConsole().getGuest().getAdditionsStatus(AdditionsRunLevelType.Desktop)
+                && i < timeout) {
+            try {Thread.sleep(1000);} catch (Exception e) {
+                if (session.getState() == SessionState.Locked)
+                    session.unlockMachine();
+                throw new BuildException(e.getMessage());
+            }
+            i++;
+        }
 
 
         if (session.getState() == SessionState.Locked)
-            session.unlockMachine();*/
+            session.unlockMachine();   */
     }
 }
