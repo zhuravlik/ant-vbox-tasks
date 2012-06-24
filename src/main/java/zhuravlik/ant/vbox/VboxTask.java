@@ -31,6 +31,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import static zhuravlik.ant.vbox.reflection.Fields.*;
+import static zhuravlik.ant.vbox.reflection.Methods.*;
+import static zhuravlik.ant.vbox.reflection.Classes.*;
+
 /**
  * Created by IntelliJ IDEA.
  * User: anton
@@ -122,6 +126,18 @@ public class VboxTask extends Task {
         actions.add(waitForTools);
     }
     
+    public void addAddSharedFolder(AddSharedFolder addSharedFolder) {
+        actions.add(addSharedFolder);
+    }
+    
+    public void addCaptureScreen(CaptureScreen captureScreen) {
+        actions.add(captureScreen);
+    }
+    
+    public void addClone(Clone clone) {
+        actions.add(clone);
+    }
+    
     public void execute() throws BuildException {
 
 		if (vbox_home != null)
@@ -132,24 +148,12 @@ public class VboxTask extends Task {
         Methods.initialize();
         Fields.initialize();
         
-        try {
-            Class managerClass = Class.forName(versionPrefix + ".VirtualBoxManager");
-            Class boxInterface = Class.forName(versionPrefix + ".IVirtualBox");
-            Class sessionInterface = Class.forName(versionPrefix + ".ISession");
+        try {            
+            Object vbm = managerCreateInstanceMethod.invoke(null, new Object[] {null});
+            Object box = managerGetVBoxMethod.invoke(vbm);
+            Object session = managerGetSessionObjectMethod.invoke(vbm);
             
-            Method createMethod = managerClass.getMethod("createInstance", String.class);
-            Object vbm = createMethod.invoke(null, new Object[] {null});
-            Method getVBMethod = managerClass.getMethod("getVBox");
-            Method getSessionMethod = managerClass.getMethod("getSessionObject");
-            
-            Object box = getVBMethod.invoke(vbm);
-            Object session = getSessionMethod.invoke(vbm);            
-
-            Method getMachinesMethod = boxInterface.getMethod("getMachines");
-            List vms = (List)getMachinesMethod.invoke(box);
-            
-            Class machineInterface = Class.forName(versionPrefix + ".IMachine");
-            Method getMachineNameMethod = machineInterface.getMethod("getName");
+            List vms = (List)getMachinesMethod.invoke(box);                        
             
             Object neededVM = null;
             for (Object vm: vms) {
@@ -166,40 +170,11 @@ public class VboxTask extends Task {
                 action.executeAction(neededVM, session);
             }
             
-            Class sessionStateEnum = Class.forName(versionPrefix + ".SessionState");
-            Field lockedStateField = sessionStateEnum.getField("Locked");
-            
-            Method getSessionStateMethod = sessionInterface.getMethod("getState");
-            Method unlockMachineMethod = sessionInterface.getMethod("unlockMachine");
-
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
                 unlockMachineMethod.invoke(session);
         }
         catch (Exception e) {
             throw new BuildException(e);
         }
-
-        /*VirtualBoxManager vbm = VirtualBoxManager.createInstance(null);
-
-        IVirtualBox box = vbm.getVBox();
-        ISession session = vbm.getSessionObject();
-
-        List<IMachine> vms = box.getMachines();
-        IMachine neededVM = null;
-        for (IMachine vm: vms) {
-            if (vm.getName().equals(name)) {
-                neededVM = vm;
-            }
-        }
-
-        if (neededVM == null)
-            throw new BuildException("Virtual machine [" + name + "] cannot be found");
-
-        for (VboxAction action: actions) {
-            action.executeAction(neededVM, session);
-        }
-
-        if (session.getState() == SessionState.Locked)
-            session.unlockMachine();    */
     }
 }

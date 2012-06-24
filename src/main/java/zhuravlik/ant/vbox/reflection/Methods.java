@@ -23,6 +23,7 @@ import org.apache.tools.ant.BuildException;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.UUID;
 
 import static zhuravlik.ant.vbox.reflection.Classes.*;
 
@@ -57,6 +58,18 @@ public class Methods {
     public static Method takeSnapshotMethod;
     public static Method executeProcessFlagEnumValueMethod;
     public static Method getAdditionsStatusMethod;
+    public static Method createSharedFolderMethod;
+    public static Method takeScreenShotPNGToArrayMethod;
+    public static Method getScreenResolutionMethod;
+    public static Method cloneToMethod;
+    public static Method managerCreateInstanceMethod;
+    public static Method managerGetVBoxMethod;
+    public static Method managerGetSessionObjectMethod;            
+    public static Method getMachinesMethod;            
+    public static Method getMachineNameMethod;
+    public static Method createMachineMethod;
+    public static Method machineSaveSettingsMethod;
+    public static Method registerMachineMethod;
     
     
     public static void initialize() throws BuildException {
@@ -103,6 +116,27 @@ public class Methods {
             executeProcessFlagEnumValueMethod = executeProcessFlagEnum.getMethod("value");
 
             getAdditionsStatusMethod = guestInterface.getMethod("getAdditionsStatus", additionsRunLevelTypeEnum);
+            
+            createSharedFolderMethod = consoleInterface.getMethod("createSharedFolder", String.class, String.class, 
+                    Boolean.class, Boolean.class);            
+            
+            takeScreenShotPNGToArrayMethod = displayInterface.getMethod("takeScreenShotPNGToArray", Long.class, Long.class, Long.class);
+            getScreenResolutionMethod = displayInterface.getMethod("getScreenResolution", Long.class, holderClass, holderClass, holderClass);
+            
+            cloneToMethod = machineInterface.getMethod("cloneTo", machineInterface, cloneModeEnum, cloneOptionsEnumArray);
+            createMachineMethod = virtualBoxInterface.getMethod("createMachine", String.class, String.class, String.class, UUID.class, Boolean.class);
+            
+            managerCreateInstanceMethod = virtualBoxManagerClass.getMethod("createInstance", String.class);
+            managerGetVBoxMethod = virtualBoxManagerClass.getMethod("getVBox");
+            managerGetSessionObjectMethod = virtualBoxManagerClass.getMethod("getSessionObject");
+            
+            getMachinesMethod = virtualBoxInterface.getMethod("getMachines");
+            
+            getMachineNameMethod = machineInterface.getMethod("getName");
+            
+            machineSaveSettingsMethod = machineInterface.getMethod("saveSettings");
+            
+            registerMachineMethod = virtualBoxInterface.getMethod("registerMachine", machineInterface);
         }
         catch (Exception e) {
             throw new BuildException(e);

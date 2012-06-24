@@ -42,6 +42,17 @@ public class Fields {
     public static Field waitForProcessStartOnlyField;
     public static Field waitForNoneField;
     public static Field additionsRunLevelDesktopField;
+    public static Field consoleDisplayField;
+    public static Field holderValueField;
+    
+    public static Field cloneModeMachineState;
+    public static Field cloneModeMachineAndChildStates;
+    public static Field cloneModeAllStates;
+    
+    public static Field cloneOptionLink;
+    public static Field cloneOptionKeepAllMACs;
+    public static Field cloneOptionKeepNATMACs;
+    public static Field cloneOptionKeepDiskNames;
 
     public static void initialize() throws BuildException {
         try {
@@ -53,6 +64,17 @@ public class Fields {
             waitForProcessStartOnlyField = executeProcessFlagEnum.getField("WaitForProcessStartOnly");
             waitForNoneField = executeProcessFlagEnum.getField("None");
             additionsRunLevelDesktopField = additionsRunLevelTypeEnum.getField("Desktop");
+            consoleDisplayField = consoleInterface.getField("display");
+            holderValueField = holderClass.getField("value");
+            
+           cloneModeMachineState = cloneModeEnum.getField("MachineState");
+           cloneModeMachineAndChildStates = cloneModeEnum.getField("MachineAndChildStates");
+           cloneModeAllStates = cloneModeEnum.getField("AllStates");
+           
+           cloneOptionLink = cloneOptionsEnum.getField("Link");
+           cloneOptionKeepAllMACs = cloneOptionsEnum.getField("KeepAllMACs");
+           cloneOptionKeepNATMACs = cloneOptionsEnum.getField("KeepNATMACs");
+           cloneOptionKeepDiskNames = cloneOptionsEnum.getField("KeepDiskNames");
         }
         catch (Exception e) {
             throw new BuildException(e);

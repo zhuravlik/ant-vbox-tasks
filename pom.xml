@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <vbox.sdk.path>/home/anton/vboxsdk/sdk/</vbox.sdk.path>
+    <vbox.sdk.path>/usr/lib/virtualbox/sdk/</vbox.sdk.path>
   </properties>
 
   <profiles>
