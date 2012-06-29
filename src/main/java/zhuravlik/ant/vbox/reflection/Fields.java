@@ -53,6 +53,11 @@ public class Fields {
     public static Field cloneOptionKeepAllMACs;
     public static Field cloneOptionKeepNATMACs;
     public static Field cloneOptionKeepDiskNames;
+    
+    public static Field cleanupModeUnregisterOnly;
+    public static Field cleanupModeDetachAllReturnNone;
+    public static Field cleanupModeDetachAllReturnHardDisksOnly;
+    public static Field cleanupModeFull;
 
     public static void initialize() throws BuildException {
         try {
@@ -75,6 +80,11 @@ public class Fields {
            cloneOptionKeepAllMACs = cloneOptionsEnum.getField("KeepAllMACs");
            cloneOptionKeepNATMACs = cloneOptionsEnum.getField("KeepNATMACs");
            cloneOptionKeepDiskNames = cloneOptionsEnum.getField("KeepDiskNames");
+           
+           cleanupModeUnregisterOnly = cleanupOptionsEnum.getField("UnregisterOnly");
+           cleanupModeDetachAllReturnNone = cleanupOptionsEnum.getField("DetachAllReturnNone");
+           cleanupModeDetachAllReturnHardDisksOnly = cleanupOptionsEnum.getField("DetachAllReturnHardDisksOnly");
+           cleanupModeFull = cleanupOptionsEnum.getField("Full");                      
         }
         catch (Exception e) {
             throw new BuildException(e);

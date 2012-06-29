@@ -57,7 +57,6 @@ public class Methods {
     public static Method executeProcessMethod;
     public static Method takeSnapshotMethod;
     public static Method executeProcessFlagEnumValueMethod;
-    public static Method getAdditionsStatusMethod;
     public static Method createSharedFolderMethod;
     public static Method takeScreenShotPNGToArrayMethod;
     public static Method getScreenResolutionMethod;
@@ -70,7 +69,9 @@ public class Methods {
     public static Method createMachineMethod;
     public static Method machineSaveSettingsMethod;
     public static Method registerMachineMethod;
-    
+    public static Method unregisterMachineMethod;
+    public static Method machineDeleteMediaMethod;
+    public static Method getAdditionsStatusMethod;
     
     public static void initialize() throws BuildException {
         try {
@@ -136,7 +137,11 @@ public class Methods {
             
             machineSaveSettingsMethod = machineInterface.getMethod("saveSettings");
             
+            machineDeleteMediaMethod = machineInterface.getMethod("delete", mediumArray);
+            
             registerMachineMethod = virtualBoxInterface.getMethod("registerMachine", machineInterface);
+            
+            unregisterMachineMethod = machineInterface.getMethod("unregister", cleanupOptionsEnum);
         }
         catch (Exception e) {
             throw new BuildException(e);

@@ -46,8 +46,11 @@ public class Classes {
     public static Class additionsRunLevelTypeEnum;
     public static Class cloneModeEnum;
     public static Class cloneOptionsEnum;
+    public static Class cleanupOptionsEnum;
     public static Class cloneOptionsEnumArray;
     public static Class virtualBoxInterface;
+    public static Class mediumInterface;
+    public static Class mediumArray;
     public static Class virtualBoxManagerClass;
 
     public static void initialize() throws BuildException {
@@ -60,6 +63,8 @@ public class Classes {
             snapshotInterface = Class.forName(VboxTask.versionPrefix + ".ISnapshot");
             displayInterface = Class.forName(VboxTask.versionPrefix + ".IDisplay");
             virtualBoxInterface = Class.forName(VboxTask.versionPrefix + ".IVirtualBox");
+            mediumInterface = Class.forName(VboxTask.versionPrefix + ".IMedium");
+            mediumArray = Class.forName("[L" + VboxTask.versionPrefix +".IMedium;");
 
             sessionStateEnum = Class.forName(VboxTask.versionPrefix + ".SessionState");
             lockTypeEnum = Class.forName(VboxTask.versionPrefix + ".LockType");
@@ -67,8 +72,10 @@ public class Classes {
             executeProcessFlagEnum = Class.forName(VboxTask.versionPrefix + ".ExecuteProcessFlag");
             additionsRunLevelTypeEnum = Class.forName(VboxTask.versionPrefix + ".AdditionsRunLevelType");
             cloneModeEnum = Class.forName(VboxTask.versionPrefix + ".CloneMode");
-            cloneOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CloneOptionsEnum");
-            cloneOptionsEnumArray = Class.forName("[L" + VboxTask.versionPrefix +".CloneOptionsEnum;");
+            cloneOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CloneOptions");
+            cleanupOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CleanupMode");
+            
+            cloneOptionsEnumArray = Class.forName("[L" + VboxTask.versionPrefix +".CloneOptions;");
 
             holderClass = Class.forName(VboxTask.versionPrefix + ".Holder");
             virtualBoxManagerClass = Class.forName(VboxTask.versionPrefix + ".VirtualBoxManager");
