@@ -58,6 +58,13 @@ public class Fields {
     public static Field cleanupModeDetachAllReturnNone;
     public static Field cleanupModeDetachAllReturnHardDisksOnly;
     public static Field cleanupModeFull;
+    
+    public static Field directoryOpenFlagNone;
+
+    public static Field guestDirectoryEntryName;
+    public static Field guestDirectoryEntryType;
+    public static Field guestDirectoryEntryTypeDirectory;
+    public static Field guestDirectoryEntryTypeFile;
 
     public static void initialize() throws BuildException {
         try {
@@ -71,20 +78,28 @@ public class Fields {
             additionsRunLevelDesktopField = additionsRunLevelTypeEnum.getField("Desktop");
             consoleDisplayField = consoleInterface.getField("display");
             holderValueField = holderClass.getField("value");
-            
-           cloneModeMachineState = cloneModeEnum.getField("MachineState");
-           cloneModeMachineAndChildStates = cloneModeEnum.getField("MachineAndChildStates");
-           cloneModeAllStates = cloneModeEnum.getField("AllStates");
-           
-           cloneOptionLink = cloneOptionsEnum.getField("Link");
-           cloneOptionKeepAllMACs = cloneOptionsEnum.getField("KeepAllMACs");
-           cloneOptionKeepNATMACs = cloneOptionsEnum.getField("KeepNATMACs");
-           cloneOptionKeepDiskNames = cloneOptionsEnum.getField("KeepDiskNames");
-           
-           cleanupModeUnregisterOnly = cleanupOptionsEnum.getField("UnregisterOnly");
-           cleanupModeDetachAllReturnNone = cleanupOptionsEnum.getField("DetachAllReturnNone");
-           cleanupModeDetachAllReturnHardDisksOnly = cleanupOptionsEnum.getField("DetachAllReturnHardDisksOnly");
-           cleanupModeFull = cleanupOptionsEnum.getField("Full");                      
+
+            cloneModeMachineState = cloneModeEnum.getField("MachineState");
+            cloneModeMachineAndChildStates = cloneModeEnum.getField("MachineAndChildStates");
+            cloneModeAllStates = cloneModeEnum.getField("AllStates");
+
+            cloneOptionLink = cloneOptionsEnum.getField("Link");
+            cloneOptionKeepAllMACs = cloneOptionsEnum.getField("KeepAllMACs");
+            cloneOptionKeepNATMACs = cloneOptionsEnum.getField("KeepNATMACs");
+            cloneOptionKeepDiskNames = cloneOptionsEnum.getField("KeepDiskNames");
+
+            cleanupModeUnregisterOnly = cleanupOptionsEnum.getField("UnregisterOnly");
+            cleanupModeDetachAllReturnNone = cleanupOptionsEnum.getField("DetachAllReturnNone");
+            cleanupModeDetachAllReturnHardDisksOnly = cleanupOptionsEnum.getField("DetachAllReturnHardDisksOnly");
+            cleanupModeFull = cleanupOptionsEnum.getField("Full");
+
+            directoryOpenFlagNone = directoryOpenFlagEnum.getField("None");
+
+            guestDirectoryEntryName = guestDirectoryEntryInterface.getField("name");
+            guestDirectoryEntryType = guestDirectoryEntryInterface.getField("type");
+
+            guestDirectoryEntryTypeDirectory = guestDirectoryEntryTypeEnum.getField("Directory");
+            guestDirectoryEntryTypeFile = guestDirectoryEntryTypeEnum.getField("File");
         }
         catch (Exception e) {
             throw new BuildException(e);

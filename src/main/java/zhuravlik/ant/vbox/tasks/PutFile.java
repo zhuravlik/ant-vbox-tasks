@@ -23,6 +23,8 @@ import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
+import java.io.File;
+
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
 
@@ -64,6 +66,39 @@ public class PutFile extends VboxAction {
         this.timeout = timeout;
     }
 
+    private void putObject(Object guest, String path, String dest) throws Exception {
+        File f = new File(path);
+
+        if (!f.exists())
+            throw new BuildException("Trying to put nonexisting file");
+        else if (f.isFile()) {
+            Object p = copyToGuestMethod.invoke(guest, path, dest, VboxTask.username, VboxTask.password, (long)0);
+            waitForCompletionMethod.invoke(p, -1);
+        }
+        else if (f.isDirectory()) {
+            File[] fs = f.listFiles();
+            String gsep = dest.indexOf('\\') >= 0 ? "\\" : "/";
+
+            if (!dest.endsWith("\\")
+                    && !dest.endsWith("/")
+                    &&(Boolean)fileExistsMethod.invoke(guest, dest, VboxTask.username, VboxTask.password)) {
+                throw new BuildException("Trying to put directory in place of existing file, it fails by definition");
+            }
+            else {
+                if (!dest.endsWith(gsep))
+                    dest = dest + gsep;
+
+                if (!(Boolean)fileExistsMethod.invoke(guest, dest, VboxTask.username, VboxTask.password))
+                    directoryCreateMethod.invoke(guest, dest);
+            }
+
+            for (File fl: fs) {
+                putObject(guest, path + File.separator + fl.getName(), dest + gsep + fl.getName());
+            }
+        }
+
+    }
+
     @Override
     public void executeAction(Object machine, Object session) {
 
@@ -74,8 +109,10 @@ public class PutFile extends VboxAction {
             Object console = getConsoleMethod.invoke(session);
             Object guest = getGuestMethod.invoke(console);
 
-            Object p = copyToGuestMethod.invoke(guest, path, destination, VboxTask.username, VboxTask.password, (long)0);
-            waitForCompletionMethod.invoke(p, -1);
+            /*Object p = copyToGuestMethod.invoke(guest, path, destination, VboxTask.username, VboxTask.password, (long)0);
+            waitForCompletionMethod.invoke(p, -1);*/
+
+            putObject(guest, path, destination);
 
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))

@@ -72,6 +72,10 @@ public class Methods {
     public static Method unregisterMachineMethod;
     public static Method machineDeleteMediaMethod;
     public static Method getAdditionsStatusMethod;
+    public static Method directoryOpenMethod;
+    public static Method directoryReadMethod;
+    public static Method directoryCloseMethod;
+    public static Method fileExistsMethod;
     
     public static void initialize() throws BuildException {
         try {
@@ -142,6 +146,15 @@ public class Methods {
             registerMachineMethod = virtualBoxInterface.getMethod("registerMachine", machineInterface);
             
             unregisterMachineMethod = machineInterface.getMethod("unregister", cleanupOptionsEnum);
+            
+            directoryOpenMethod = guestInterface.getMethod("directoryOpen", String.class, String.class,
+                    Long.class, String.class, String.class);
+            
+            directoryReadMethod = guestInterface.getMethod("directoryRead", Long.class);
+
+            directoryCloseMethod = guestInterface.getMethod("directoryClose", Long.class);
+            
+            fileExistsMethod = guestInterface.getMethod("fileExists", String.class, String.class, String.class);
         }
         catch (Exception e) {
             throw new BuildException(e);

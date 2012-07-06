@@ -20,8 +20,11 @@
 package zhuravlik.ant.vbox.tasks;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.util.FileUtils;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
+
+import java.io.File;
 
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
@@ -62,6 +65,41 @@ public class GetFile extends VboxAction {
         this.timeout = timeout;
     }
 
+    private void getObject(Object guest, String path, String dest) throws Exception {
+        // implementation of fileExists in VB is ugly: it depends on trailing slash
+        // to distinguish between file and directory; and depending on it, it checks
+        // for directory existence or file existence
+        //
+        // we only need to check whether our object is file, so work around it
+        if (!path.endsWith("\\")
+                && !path.endsWith("/")
+                &&(Boolean)fileExistsMethod.invoke(guest, path, VboxTask.username, VboxTask.password)) {
+            Object p = copyFromGuestMethod.invoke(guest, path, dest,
+                    VboxTask.username, VboxTask.password, (long)0);
+            waitForCompletionMethod.invoke(p, -1);
+        }
+        else {
+            File f = new File(dest);
+
+            if (f.exists() && !f.isDirectory())
+                throw new BuildException("Trying to overwrite existing non-directory with directory, that " +
+                        "fails by definition");
+            else if (!f.exists())
+                f.mkdirs();
+
+            Long directoryHandle = (Long)directoryOpenMethod.invoke(guest, path, "", directoryOpenFlagNone.get(null),
+                    VboxTask.username, VboxTask.password);
+
+            Object entry;
+            while ((entry = directoryReadMethod.invoke(guest, directoryHandle)) != null) {
+                String entryName = (String)guestDirectoryEntryName.get(entry);
+
+                String guestSeparator = path.indexOf('\\') >= 0 ? "\\" : "/"; //let's employ some simple heuristic
+                getObject(guest, path + guestSeparator + entryName, dest + File.separator + entryName);
+            }
+        }
+    }
+
     @Override
     public void executeAction(Object machine, Object session) {
         try {
@@ -71,9 +109,13 @@ public class GetFile extends VboxAction {
             Object console = getConsoleMethod.invoke(session);
             Object guest = getGuestMethod.invoke(console);
 
-            Object p = copyFromGuestMethod.invoke(guest, path, destination, VboxTask.username, VboxTask.password, (long)0);
-            waitForCompletionMethod.invoke(p, -1);
-
+            // there is a need to parse directory contents, because
+            // copyFromGuest method was too unstable during tests for directories,
+            // and was stable only for single files
+            //
+            // that's why it is safer to iterate over directory tree and get each single file,
+            // creating intermediate directories by the way
+            getObject(guest, path, destination);
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
                 unlockMachineMethod.invoke(session);

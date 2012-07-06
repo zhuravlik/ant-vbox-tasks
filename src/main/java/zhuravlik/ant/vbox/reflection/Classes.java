@@ -52,6 +52,9 @@ public class Classes {
     public static Class mediumInterface;
     public static Class mediumArray;
     public static Class virtualBoxManagerClass;
+    public static Class directoryOpenFlagEnum;
+    public static Class guestDirectoryEntryInterface;
+    public static Class guestDirectoryEntryTypeEnum;
 
     public static void initialize() throws BuildException {
         try {
@@ -65,6 +68,7 @@ public class Classes {
             virtualBoxInterface = Class.forName(VboxTask.versionPrefix + ".IVirtualBox");
             mediumInterface = Class.forName(VboxTask.versionPrefix + ".IMedium");
             mediumArray = Class.forName("[L" + VboxTask.versionPrefix +".IMedium;");
+            guestDirectoryEntryInterface = Class.forName(VboxTask.versionPrefix + ".IGuestDirEntry");
 
             sessionStateEnum = Class.forName(VboxTask.versionPrefix + ".SessionState");
             lockTypeEnum = Class.forName(VboxTask.versionPrefix + ".LockType");
@@ -74,6 +78,9 @@ public class Classes {
             cloneModeEnum = Class.forName(VboxTask.versionPrefix + ".CloneMode");
             cloneOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CloneOptions");
             cleanupOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CleanupMode");
+            directoryOpenFlagEnum = Class.forName(VboxTask.versionPrefix + ".DirectoryOpenFlag");
+
+            guestDirectoryEntryTypeEnum = Class.forName(VboxTask.versionPrefix + ".GuestDieEntryType");
             
             cloneOptionsEnumArray = Class.forName("[L" + VboxTask.versionPrefix +".CloneOptions;");
 
