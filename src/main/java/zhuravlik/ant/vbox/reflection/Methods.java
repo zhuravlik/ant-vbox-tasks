@@ -76,6 +76,11 @@ public class Methods {
     public static Method directoryReadMethod;
     public static Method directoryCloseMethod;
     public static Method fileExistsMethod;
+    public static Method pauseVMMethod;
+    public static Method resumeVMMethod;
+    public static Method resetVMMethod;
+    public static Method sleepVMMethod;
+    public static Method removeSharedFolderMethod;
     
     public static void initialize() throws BuildException {
         try {
@@ -106,6 +111,10 @@ public class Methods {
             directoryCreateFlagEnumValueMethod = directoryCreateFlagEnum.getMethod("value");
             
             powerDownMethod = consoleInterface.getMethod("powerDown");
+            pauseVMMethod = consoleInterface.getMethod("pause");
+            resumeVMMethod = consoleInterface.getMethod("resume");
+            resetVMMethod = consoleInterface.getMethod("reset");
+            sleepVMMethod = consoleInterface.getMethod("sleepButton");
             
             launchVMProcessMethod = machineInterface.getMethod("launchVMProcess", sessionInterface, String.class,
                     String.class);
@@ -123,8 +132,11 @@ public class Methods {
             getAdditionsStatusMethod = guestInterface.getMethod("getAdditionsStatus", additionsRunLevelTypeEnum);
             
             createSharedFolderMethod = consoleInterface.getMethod("createSharedFolder", String.class, String.class, 
-                    Boolean.class, Boolean.class);            
-            
+                    Boolean.class, Boolean.class);
+
+            removeSharedFolderMethod = consoleInterface.getMethod("removeSharedFolder", String.class);
+
+
             takeScreenShotPNGToArrayMethod = displayInterface.getMethod("takeScreenShotPNGToArray", Long.class, Long.class, Long.class);
             getScreenResolutionMethod = displayInterface.getMethod("getScreenResolution", Long.class, holderClass, holderClass, holderClass);
             
