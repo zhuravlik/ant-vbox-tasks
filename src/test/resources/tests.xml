@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ant-vbox-tasks-tests" default="fullTestSuite">
+    <description>Tests for Ant taskset for VIX API</description>
+
+    
+    <!--<taskdef uri="antlib:org.apache.ant.antunit"
+                         resource="org/apache/ant/antunit/antlib.xml"
+                         classpath="${test.classpath}" />-->
+
+    <taskdef name="vbox" classname="zhuravlik.ant.vbox.VboxTask" classpath="${test.classpath}" />
+
+    
+    <target name="fullTestSuite">
+        <antcall target="testOpenVM" />
+        <antcall target="testSharedFolder" />
+        <antcall target="testPowerOperations" />
+     
+        <antcall target="testCloneLinkedDelete" />
+        <antcall target="testCloneFullDelete" />
+        <antcall target="testSnapshot" />
+     
+        <!--<echo message="${test.classpath}" />
+        <au:antunit failonerror="true">
+            <file file="${ant.file}" />
+            <au:plainlistener />
+            <au:xmllistener logLevel="info" toDir="${test.report.dir}" />
+            </au:antunit>-->
+    </target>
+
+    <target name="testOpenVM">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+        </vbox>
+    </target>
+
+    <target name="testSharedFolder">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <addsharedfolder sharename="test_share" hostpath="/tmp" />
+            <removesharedfolder sharename="test_share" />
+        </vbox>
+    </target>
+
+    <target name="testPowerOperations">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <poweron />
+            <pause />
+            <unpause />
+            <suspend />
+            <poweron />
+            <reset />
+            <poweroff />
+        </vbox>
+    </target>
+
+    <target name="testCloneLinkedDelete">
+        <mkdir dir="/home/anton/vbox-clone" />
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <clone clonetype="linked" name="vboxclone" destination="/home/anton/vbox-clone/clone.vmx" />
+        </vbox>
+        <vbox name="vboxclone" api_version="${test.api.version}">
+            <delete />
+        </vbox>
+        <delete dir="/home/anton/vbox-clone" />
+    </target>
+
+    <target name="testCloneFullDelete">
+        <mkdir dir="/home/anton/vbox-clone" />
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <clone clonetype="full" destination="/home/anton/vbox-clone/clone.vmx" />
+        </vbox>
+        <vbox name="/home/anton/vbox-clone/clone.vmx" api_version="${test.api.version}">
+            <delete />
+        </vbox>
+        <delete dir="/home/anton/vbox-clone" />
+    </target>
+
+
+    <target name="testSnapshot">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <takesnapshot name="vboxtestsnap" description="My test snapshot" />
+            <poweron />
+            <reverttosnapshot name="vboxtestsnap" />
+            <deletesnapshot name="vboxtestsnap" />
+        </vbox>
+    </target>
+
+    <target name="testLoginLogout">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <poweron />
+            <waitfortools />
+            <login interactive="false" user="admin" password="admin" />
+            <logout />
+            <login interactive="true" user="admin" password="admin" />
+            <logout />
+            <poweoff />
+        </vbox>
+    </target>
+
+    <target name="testCreateMoveDeleteDirectory">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <poweron />
+            <waitfortools />
+            <login interactive="true" user="admin" password="admin" />
+            <createdirectory path="c:\test" />
+            <movefile path="c:\test" destination="c:\test_moved" />
+            <deletedirectory path="c:\test_moved" />
+            <logout />
+            <poweoff />
+        </vbox>
+    </target>
+
+    <target name="testCreateMoveDeleteFile">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <poweron />
+            <waitfortools />
+            <login interactive="true" user="admin" password="admin" />
+            <createtempfile />
+            <movefile path="${vbox.tempfile.path}" destination="c:\test_file_moved" />
+            <deletefile path="c:\test_file_moved" />
+            <logout />
+            <poweoff />
+        </vbox>
+    </target>
+
+    <target name="testPutMoveGetFile">
+        <vbox name="${test.vm}" api_version="${test.api.version}">
+            <poweron />
+            <waitfortools />
+            <login interactive="true" user="admin" password="admin" />
+            <putfile path="/home/anton/.bashrc" destination="c:\bashrc" />
+            <movefile path="c:\bashrc" destination="c:\bashrc2" />
+            <getfile path="c:\bashrc2" destination="/tmp/bashrc2" />
+            <logout />
+            <poweoff />
+        </vbox>
+    </target>
+
+</project>

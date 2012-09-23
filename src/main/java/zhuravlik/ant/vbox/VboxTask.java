@@ -43,10 +43,10 @@ import static zhuravlik.ant.vbox.reflection.Classes.*;
  * To change this template use File | Settings | File Templates.
  */
 public class VboxTask extends Task {
-    
     public static String username;
     public static String password;
     public static String versionPrefix;
+    public static Object session;
     
     private List<VboxAction> actions = new ArrayList<VboxAction>();
     
@@ -117,6 +117,22 @@ public class VboxTask extends Task {
     public void addRunProgram(RunProgram runProgram) {
         actions.add(runProgram);
     }
+
+    public void addPause(Pause pause) {
+        actions.add(pause);
+    }
+
+    public void addUnpause(Unpause unpause) {
+        actions.add(unpause);
+    }
+
+    public void addSuspend(Suspend suspend) {
+        actions.add(suspend);
+    }
+
+    public void addReset(Reset reset) {
+        actions.add(reset);
+    }
     
     public void addTakeSnapshot(TakeSnapshot takeSnapshot) {
         actions.add(takeSnapshot);
@@ -128,6 +144,10 @@ public class VboxTask extends Task {
     
     public void addAddSharedFolder(AddSharedFolder addSharedFolder) {
         actions.add(addSharedFolder);
+    }
+
+    public void addRemoveSharedFolder(RemoveSharedFolder removeSharedFolder) {
+        actions.add(removeSharedFolder);
     }
     
     public void addCaptureScreen(CaptureScreen captureScreen) {
@@ -144,24 +164,29 @@ public class VboxTask extends Task {
 			System.setProperty("vbox.home", vbox_home);
         
         versionPrefix = "org.virtualbox_" + api_version.replaceAll("\\.", "_");
+
+
         Classes.initialize();
+
         Methods.initialize();
         Fields.initialize();
         
-        try {            
+        try {
             Object vbm = managerCreateInstanceMethod.invoke(null, new Object[] {null});
             Object box = managerGetVBoxMethod.invoke(vbm);
             Object session = managerGetSessionObjectMethod.invoke(vbm);
             
-            List vms = (List)getMachinesMethod.invoke(box);                        
+            //List vms = (List)getMachinesMethod.invoke(box);
             
-            Object neededVM = null;
+            /*Object neededVM = null;
             for (Object vm: vms) {
                 String nm = (String) getMachineNameMethod.invoke(vm);
                 if (name.equals(nm)) {
                     neededVM = vm;
                 }
-            }
+            } */
+
+            Object neededVM = findMachineMethod.invoke(box, name);
             
             if (neededVM == null)
                 throw new BuildException("Virtual machine [" + name + "] cannot be found");

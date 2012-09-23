@@ -20,6 +20,7 @@
 package zhuravlik.ant.vbox.reflection;
 
 import org.apache.tools.ant.BuildException;
+import zhuravlik.ant.vbox.VboxTask;
 
 import java.lang.reflect.Field;
 
@@ -42,7 +43,6 @@ public class Fields {
     public static Field waitForProcessStartOnlyField;
     public static Field waitForNoneField;
     public static Field additionsRunLevelDesktopField;
-    public static Field consoleDisplayField;
     public static Field holderValueField;
     
     public static Field cloneModeMachineState;
@@ -61,10 +61,15 @@ public class Fields {
     
     public static Field directoryOpenFlagNone;
 
-    public static Field guestDirectoryEntryName;
-    public static Field guestDirectoryEntryType;
     public static Field guestDirectoryEntryTypeDirectory;
     public static Field guestDirectoryEntryTypeFile;
+
+    public static Field copyFileFlagNone;
+    public static Field copyFileFlagRecursive;
+    public static Field copyFileFlagUpdate;
+    public static Field copyFileFlagFollowLinks;
+
+    public static Field directoryCreateFlagParents;
 
     public static void initialize() throws BuildException {
         try {
@@ -73,10 +78,8 @@ public class Fields {
             sharedLockField = lockTypeEnum.getField("Shared");
             writeLockField = lockTypeEnum.getField("Write");
             parentsFlagField = directoryCreateFlagEnum.getField("Parents");
-            waitForProcessStartOnlyField = executeProcessFlagEnum.getField("WaitForProcessStartOnly");
-            waitForNoneField = executeProcessFlagEnum.getField("None");
+
             additionsRunLevelDesktopField = additionsRunLevelTypeEnum.getField("Desktop");
-            consoleDisplayField = consoleInterface.getField("display");
             holderValueField = holderClass.getField("value");
 
             cloneModeMachineState = cloneModeEnum.getField("MachineState");
@@ -95,11 +98,23 @@ public class Fields {
 
             directoryOpenFlagNone = directoryOpenFlagEnum.getField("None");
 
-            guestDirectoryEntryName = guestDirectoryEntryInterface.getField("name");
-            guestDirectoryEntryType = guestDirectoryEntryInterface.getField("type");
+            waitForProcessStartOnlyField = executeProcessFlagEnum.getField("WaitForProcessStartOnly");
+            waitForNoneField = executeProcessFlagEnum.getField("None");
 
-            guestDirectoryEntryTypeDirectory = guestDirectoryEntryTypeEnum.getField("Directory");
-            guestDirectoryEntryTypeFile = guestDirectoryEntryTypeEnum.getField("File");
+            if (VboxTask.versionPrefix.contains("4_1")) {
+                guestDirectoryEntryTypeDirectory = guestDirectoryEntryTypeEnum.getField("Directory");
+                guestDirectoryEntryTypeFile = guestDirectoryEntryTypeEnum.getField("File");
+
+
+            }
+
+            if (VboxTask.versionPrefix.contains("4_2")) {
+                copyFileFlagNone = copyFileFlagEnum.getField("None");
+                copyFileFlagFollowLinks = copyFileFlagEnum.getField("FollowLinks");
+                copyFileFlagRecursive = copyFileFlagEnum.getField("Recursive");
+                copyFileFlagUpdate = copyFileFlagEnum.getField("Update");
+                directoryCreateFlagParents = directoryCreateFlagEnum.getField("Parents");
+            }
         }
         catch (Exception e) {
             throw new BuildException(e);

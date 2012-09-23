@@ -21,6 +21,7 @@ package zhuravlik.ant.vbox.tasks;
 
 import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
+import zhuravlik.ant.vbox.VboxTask;
 
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
@@ -43,7 +44,10 @@ public class Logout extends VboxAction {
             Object console = getConsoleMethod.invoke(session);
             Object guest = getGuestMethod.invoke(console);
 
-            setCredentialsMethod.invoke(guest, "", "", "", false);
+            if (VboxTask.versionPrefix.contains("4_1"))
+                setCredentialsMethod.invoke(guest, "", "", "", false);
+            else
+                closeGuestSessionMethod.invoke(VboxTask.session);
 
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))

@@ -23,6 +23,8 @@ import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
+import java.util.ArrayList;
+
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
 
@@ -66,7 +68,13 @@ public class CreateDirectory extends VboxAction {
             Object en = parentsFlagField.get(null);
             int value = (Integer)directoryCreateFlagEnumValueMethod.invoke(en);
 
-            directoryCreateMethod.invoke(guest, path, VboxTask.username, VboxTask.password, (long) mode, (long) value);
+            if (VboxTask.versionPrefix.contains("4_1"))
+                directoryCreateMethod.invoke(guest, path, VboxTask.username, VboxTask.password, (long) mode, (long) value);
+            else {
+                ArrayList<Object> flags = new ArrayList<Object>();
+                flags.add(directoryCreateFlagParents.get(null));
+                directoryCreateMethod.invoke(VboxTask.session, path, (long) mode, flags);
+            }
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
                 unlockMachineMethod.invoke(session);

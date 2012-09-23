@@ -23,6 +23,7 @@ import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static zhuravlik.ant.vbox.reflection.Classes.holderClass;
@@ -94,21 +95,34 @@ public class RunProgram extends VboxAction {
             Object console = getConsoleMethod.invoke(session);
             Object guest = getGuestMethod.invoke(console);
 
-            Object hld = holderClass.newInstance();
 
-            long flag = returnImmediately ?
-                            (Long)executeProcessFlagEnumValueMethod.invoke(
-                                    waitForProcessStartOnlyField.get(null)
-                            ) :
-                            (Long)executeProcessFlagEnumValueMethod.invoke(
-                                    waitForNoneField.get(null)
-                            );
 
-            Object p = executeProcessMethod.invoke(guest, path,
-                    flag,
-                    Arrays.asList(args.split(" ")), Arrays.asList(env.split(";")),
-                    VboxTask.username, VboxTask.password, (long)timeout, hld);
-            waitForCompletionMethod.invoke(p, -1);
+            if (VboxTask.versionPrefix.contains("4_1")) {
+                Object hld = holderClass.newInstance();
+
+                long flag = returnImmediately ?
+                        (Long)executeProcessFlagEnumValueMethod.invoke(
+                                waitForProcessStartOnlyField.get(null)
+                        ) :
+                        (Long)executeProcessFlagEnumValueMethod.invoke(
+                                waitForNoneField.get(null)
+                        );
+
+                Object p = executeProcessMethod.invoke(guest, path,
+                        flag,
+                        Arrays.asList(args.split(" ")), Arrays.asList(env.split(";")),
+                        VboxTask.username, VboxTask.password, (long)timeout, hld);
+                waitForCompletionMethod.invoke(p, -1);
+            }
+            else {
+                ArrayList<Object> flags = new ArrayList<Object>();
+
+                flags.add(returnImmediately ? waitForProcessStartOnlyField.get(null) : waitForNoneField.get(null));
+
+                executeProcessMethod.invoke(VboxTask.session, path,
+                        Arrays.asList(args.split(" ")), Arrays.asList(env.split(";")),
+                        flags, (long)timeout);
+            }
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
                 unlockMachineMethod.invoke(session);

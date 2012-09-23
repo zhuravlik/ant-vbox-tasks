@@ -24,6 +24,7 @@ import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
@@ -72,7 +73,10 @@ public class PutFile extends VboxAction {
         if (!f.exists())
             throw new BuildException("Trying to put nonexisting file");
         else if (f.isFile()) {
-            Object p = copyToGuestMethod.invoke(guest, path, dest, VboxTask.username, VboxTask.password, (long)0);
+            Object p =
+                    VboxTask.versionPrefix.contains("4_1") ?
+                    copyToGuestMethod.invoke(guest, path, dest, VboxTask.username, VboxTask.password, (long)0) :
+                    copyToGuestMethod.invoke(VboxTask.session, path, dest, copyFileFlagNone.get(null));
             waitForCompletionMethod.invoke(p, -1);
         }
         else if (f.isDirectory()) {
@@ -81,15 +85,31 @@ public class PutFile extends VboxAction {
 
             if (!dest.endsWith("\\")
                     && !dest.endsWith("/")
-                    &&(Boolean)fileExistsMethod.invoke(guest, dest, VboxTask.username, VboxTask.password)) {
+                    && (
+                       VboxTask.versionPrefix.contains("4_1") ?
+                            (Boolean)fileExistsMethod.invoke(guest, dest, VboxTask.username, VboxTask.password) :
+                            (Boolean)fileExistsMethod.invoke(VboxTask.session, dest)
+                    )
+            ) {
                 throw new BuildException("Trying to put directory in place of existing file, it fails by definition");
             }
             else {
                 if (!dest.endsWith(gsep))
                     dest = dest + gsep;
 
-                if (!(Boolean)fileExistsMethod.invoke(guest, dest, VboxTask.username, VboxTask.password))
-                    directoryCreateMethod.invoke(guest, dest);
+                if (!(
+                        VboxTask.versionPrefix.contains("4_1") ?
+                                (Boolean)fileExistsMethod.invoke(guest, dest, VboxTask.username, VboxTask.password) :
+                                (Boolean)fileExistsMethod.invoke(VboxTask.session, dest)
+                ))   {
+                    if (VboxTask.versionPrefix.contains("4_1"))
+                        directoryCreateMethod.invoke(guest, dest);
+                    else {
+                        ArrayList<Object> flags = new ArrayList<Object>();
+                        flags.add(directoryCreateFlagParents.get(null));
+                        directoryCreateMethod.invoke(VboxTask.session, dest, (long)777, flags);
+                    }
+                }
             }
 
             for (File fl: fs) {

@@ -73,9 +73,18 @@ public class GetFile extends VboxAction {
         // we only need to check whether our object is file, so work around it
         if (!path.endsWith("\\")
                 && !path.endsWith("/")
-                &&(Boolean)fileExistsMethod.invoke(guest, path, VboxTask.username, VboxTask.password)) {
-            Object p = copyFromGuestMethod.invoke(guest, path, dest,
-                    VboxTask.username, VboxTask.password, (long)0);
+                &&
+                (
+                    VboxTask.versionPrefix.contains("4_1") ?
+                    (Boolean)fileExistsMethod.invoke(guest, path, VboxTask.username, VboxTask.password) :
+                       (Boolean)fileExistsMethod.invoke(VboxTask.session, path)
+                )) {
+            Object p =
+
+                    VboxTask.versionPrefix.contains("4_1") ?
+                    copyFromGuestMethod.invoke(guest, path, dest,
+                    VboxTask.username, VboxTask.password, (long)0) :
+                    copyFromGuestMethod.invoke(VboxTask.session, path, dest, copyFileFlagNone.get(null)) ;
             waitForCompletionMethod.invoke(p, -1);
         }
         else {
@@ -87,16 +96,30 @@ public class GetFile extends VboxAction {
             else if (!f.exists())
                 f.mkdirs();
 
-            Long directoryHandle = (Long)directoryOpenMethod.invoke(guest, path, "", directoryOpenFlagNone.get(null),
+
+            if (VboxTask.versionPrefix.contains("4_1")) {
+                Long directoryHandle = (Long)directoryOpenMethod.invoke(guest, path, "", directoryOpenFlagNone.get(null),
                     VboxTask.username, VboxTask.password);
 
-            Object entry;
-            while ((entry = directoryReadMethod.invoke(guest, directoryHandle)) != null) {
-                String entryName = (String)guestDirectoryEntryName.get(entry);
+                Object entry;
+                while ((entry = directoryReadMethod.invoke(guest, directoryHandle)) != null) {
+                    String entryName = (String) getDirectoryEntryName.invoke(entry);
 
-                String guestSeparator = path.indexOf('\\') >= 0 ? "\\" : "/"; //let's employ some simple heuristic
-                getObject(guest, path + guestSeparator + entryName, dest + File.separator + entryName);
+                    String guestSeparator = path.indexOf('\\') >= 0 ? "\\" : "/"; //let's employ some simple heuristic
+                    getObject(guest, path + guestSeparator + entryName, dest + File.separator + entryName);
+                }
             }
+            else {
+                Object directory = directoryOpenMethod.invoke(VboxTask.session, path, "", directoryOpenFlagNone.get(null));
+                Object entry;
+                while ((entry = directoryReadMethod.invoke(directory)) != null) {
+                    String entryName = (String) getDirectoryEntryName.invoke(entry);
+
+                    String guestSeparator = path.indexOf('\\') >= 0 ? "\\" : "/"; //let's employ some simple heuristic
+                    getObject(guest, path + guestSeparator + entryName, dest + File.separator + entryName);
+                }
+            }
+
         }
     }
 

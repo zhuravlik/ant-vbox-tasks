@@ -50,6 +50,9 @@ public class RevertToSnapshot extends VboxAction {
         try {
             Object snapshot = findSnapshotMethod.invoke(machine, name);
 
+            PowerOff po = new PowerOff();
+            po.executeAction(machine, session);
+
             if (getSessionStateMethod.invoke(session) == unlockedStateField.get(null))
                 lockMachineMethod.invoke(machine, session, sharedLockField.get(null));
 

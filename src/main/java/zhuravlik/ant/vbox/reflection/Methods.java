@@ -20,6 +20,7 @@
 package zhuravlik.ant.vbox.reflection;
 
 import org.apache.tools.ant.BuildException;
+import zhuravlik.ant.vbox.VboxTask;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -81,6 +82,12 @@ public class Methods {
     public static Method resetVMMethod;
     public static Method sleepVMMethod;
     public static Method removeSharedFolderMethod;
+    public static Method getDisplayMethod;
+    public static Method getDirectoryEntryName;
+    public static Method getDirectoryEntryType;
+    public static Method createGuestSessionMethod;
+    public static Method closeGuestSessionMethod;
+    public static Method findMachineMethod;
     
     public static void initialize() throws BuildException {
         try {
@@ -91,10 +98,55 @@ public class Methods {
             getGuestMethod = consoleInterface.getMethod("getGuest");
             setCredentialsMethod = guestInterface.getMethod("setCredentials", String.class, String.class, String.class, Boolean.class);
             waitForCompletionMethod = progressInterface.getMethod("waitForCompletion", Integer.class);
-            copyFromGuestMethod = guestInterface.getMethod("copyFromGuest",
+
+
+            if (VboxTask.versionPrefix.contains("4_1")) {
+                copyFromGuestMethod = guestInterface.getMethod("copyFromGuest",
                     String.class, String.class, String.class, String.class, Long.class);
-            copyToGuestMethod = guestInterface.getMethod("copyToGuest",
+                copyToGuestMethod = guestInterface.getMethod("copyToGuest",
                     String.class, String.class, String.class, String.class, Long.class);
+                directoryCreateMethod = guestInterface.getMethod("directoryCreate",
+                        String.class, String.class, String.class, Long.class, Long.class);
+                executeProcessMethod = guestInterface.getMethod("executeProcess", String.class,
+                        Long.class, List.class, List.class, String.class, String.class,
+                        Long.class, holderClass);
+                getDirectoryEntryName = guestDirectoryEntryInterface.getMethod("getName");
+                getDirectoryEntryType = guestDirectoryEntryInterface.getMethod("getType");
+                executeProcessFlagEnumValueMethod = executeProcessFlagEnum.getMethod("value");
+
+                createMachineMethod = virtualBoxInterface.getMethod("createMachine", String.class, String.class, String.class, String.class, Boolean.class);
+
+                directoryOpenMethod = guestInterface.getMethod("directoryOpen", String.class, String.class,
+                        Long.class, String.class, String.class);
+
+                directoryReadMethod = guestInterface.getMethod("directoryRead", Long.class);
+
+                directoryCloseMethod = guestInterface.getMethod("directoryClose", Long.class);
+                fileExistsMethod = guestInterface.getMethod("fileExists", String.class, String.class, String.class);
+            }
+            else {
+                copyFromGuestMethod = guestSessionInterface.getMethod("copyFrom",
+                    String.class, String.class, List.class);
+                copyToGuestMethod = guestSessionInterface.getMethod("copyTo",
+                    String.class, String.class, List.class);
+                createGuestSessionMethod = guestInterface.getMethod("createSession",
+                    String.class, String.class, String.class, String.class);
+                closeGuestSessionMethod = guestSessionInterface.getMethod("close");
+                directoryCreateMethod = guestSessionInterface.getMethod("directoryCreate", String.class, Long.class,
+                        List.class);
+                executeProcessMethod = guestSessionInterface.getMethod("processCreate", String.class,
+                        List.class, List.class, List.class, Long.class);
+
+                createMachineMethod = virtualBoxInterface.getMethod("createMachine", String.class, String.class, List.class, String.class, String.class);
+
+                directoryOpenMethod = guestSessionInterface.getMethod("directoryOpen", String.class, String.class, List.class);
+                directoryReadMethod = guestDirectoryInterface.getMethod("read");
+
+                fileExistsMethod = guestSessionInterface.getMethod("fileExists", String.class);
+
+                getDirectoryEntryName = guestFsObjInfo.getMethod("getName");
+            }
+
             findSnapshotMethod = machineInterface.getMethod("findSnapshot", String.class);
 
             deleteSnapshotAndAllChildrenMethod = consoleInterface.getMethod("deleteSnapshotAndAllChildren",
@@ -104,9 +156,6 @@ public class Methods {
                     String.class);
 
             getSnapshotIdMethod = snapshotInterface.getMethod("getId");
-
-            directoryCreateMethod = guestInterface.getMethod("directoryCreate",
-                    String.class, String.class, String.class, Long.class, Long.class);
 
             directoryCreateFlagEnumValueMethod = directoryCreateFlagEnum.getMethod("value");
             
@@ -121,13 +170,11 @@ public class Methods {
 
             restoreSnapshotMethod = consoleInterface.getMethod("restoreSnapshot", snapshotInterface);
             
-            executeProcessMethod = guestInterface.getMethod("executeProcess", String.class,
-                    Long.class, List.class, List.class, String.class, String.class,
-                    Long.class, holderClass);
+
             
             takeSnapshotMethod = consoleInterface.getMethod("takeSnapshot", String.class, String.class);
 
-            executeProcessFlagEnumValueMethod = executeProcessFlagEnum.getMethod("value");
+
 
             getAdditionsStatusMethod = guestInterface.getMethod("getAdditionsStatus", additionsRunLevelTypeEnum);
             
@@ -140,33 +187,29 @@ public class Methods {
             takeScreenShotPNGToArrayMethod = displayInterface.getMethod("takeScreenShotPNGToArray", Long.class, Long.class, Long.class);
             getScreenResolutionMethod = displayInterface.getMethod("getScreenResolution", Long.class, holderClass, holderClass, holderClass);
             
-            cloneToMethod = machineInterface.getMethod("cloneTo", machineInterface, cloneModeEnum, cloneOptionsEnumArray);
-            createMachineMethod = virtualBoxInterface.getMethod("createMachine", String.class, String.class, String.class, UUID.class, Boolean.class);
+            cloneToMethod = machineInterface.getMethod("cloneTo", machineInterface, cloneModeEnum, List.class);
+
             
             managerCreateInstanceMethod = virtualBoxManagerClass.getMethod("createInstance", String.class);
             managerGetVBoxMethod = virtualBoxManagerClass.getMethod("getVBox");
             managerGetSessionObjectMethod = virtualBoxManagerClass.getMethod("getSessionObject");
             
             getMachinesMethod = virtualBoxInterface.getMethod("getMachines");
+
+            findMachineMethod = virtualBoxInterface.getMethod("findMachine", String.class);
             
             getMachineNameMethod = machineInterface.getMethod("getName");
             
             machineSaveSettingsMethod = machineInterface.getMethod("saveSettings");
             
-            machineDeleteMediaMethod = machineInterface.getMethod("delete", mediumArray);
+            machineDeleteMediaMethod = machineInterface.getMethod("delete", List.class);
             
             registerMachineMethod = virtualBoxInterface.getMethod("registerMachine", machineInterface);
             
             unregisterMachineMethod = machineInterface.getMethod("unregister", cleanupOptionsEnum);
-            
-            directoryOpenMethod = guestInterface.getMethod("directoryOpen", String.class, String.class,
-                    Long.class, String.class, String.class);
-            
-            directoryReadMethod = guestInterface.getMethod("directoryRead", Long.class);
 
-            directoryCloseMethod = guestInterface.getMethod("directoryClose", Long.class);
-            
-            fileExistsMethod = guestInterface.getMethod("fileExists", String.class, String.class, String.class);
+            getDisplayMethod = consoleInterface.getMethod("getDisplay");
+
         }
         catch (Exception e) {
             throw new BuildException(e);

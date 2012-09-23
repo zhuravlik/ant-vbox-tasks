@@ -102,20 +102,20 @@ public class Clone extends VboxAction {
         if (cloneMode == null)
             cloneMode = "current";
         
-        if (!cloneMode.equals("current") || !cloneMode.equals("withchildren") || !cloneMode.equals("full")) 
+        if (!cloneMode.equals("current") && !cloneMode.equals("withchildren") && !cloneMode.equals("full"))
             throw new BuildException("Invalid clone mode " + cloneMode + ", should be either current, withchildren or full");
         
         if (cloneType == null)
             cloneType = "linked";
         
-        if (!cloneType.equals("linked") || !cloneType.equals("full")) 
+        if (!cloneType.equals("linked") && !cloneType.equals("full"))
             throw new BuildException("Invalid clone type " + cloneType + ", should be either linked or full");
         
         try {
             Object vbm = managerCreateInstanceMethod.invoke(null, new Object[] {null});
             Object box = managerGetVBoxMethod.invoke(vbm);
             
-            Object newMachine = createMachineMethod.invoke(box, destination, name, osType, UUID.randomUUID(), false);
+            Object newMachine = createMachineMethod.invoke(box, destination, name, osType, UUID.randomUUID().toString(), false);
             
             Object cloneTypeObj = cloneMode.equals("current") ? cloneModeMachineState.get(null) :
                     (                    

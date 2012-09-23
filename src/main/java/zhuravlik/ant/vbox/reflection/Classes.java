@@ -55,6 +55,12 @@ public class Classes {
     public static Class directoryOpenFlagEnum;
     public static Class guestDirectoryEntryInterface;
     public static Class guestDirectoryEntryTypeEnum;
+    public static Class guestDirectoryInterface;
+    public static Class guestFileInterface;
+    public static Class guestFsObjInfo;
+    public static Class guestProcessInterface;
+    public static Class guestSessionInterface;
+    public static Class copyFileFlagEnum;
 
     public static void initialize() throws BuildException {
         try {
@@ -68,19 +74,35 @@ public class Classes {
             virtualBoxInterface = Class.forName(VboxTask.versionPrefix + ".IVirtualBox");
             mediumInterface = Class.forName(VboxTask.versionPrefix + ".IMedium");
             mediumArray = Class.forName("[L" + VboxTask.versionPrefix +".IMedium;");
-            guestDirectoryEntryInterface = Class.forName(VboxTask.versionPrefix + ".IGuestDirEntry");
+
+            if (VboxTask.versionPrefix.contains("4_1")) {
+                guestDirectoryEntryInterface = Class.forName(VboxTask.versionPrefix + ".IGuestDirEntry");
+                guestDirectoryEntryTypeEnum = Class.forName(VboxTask.versionPrefix + ".GuestDirEntryType");
+                executeProcessFlagEnum = Class.forName(VboxTask.versionPrefix + ".ExecuteProcessFlag");
+            }
+            else {
+                guestDirectoryInterface = Class.forName(VboxTask.versionPrefix + ".IGuestDirectory");
+                guestFileInterface = Class.forName(VboxTask.versionPrefix + ".IGuestFile");
+                guestFsObjInfo = Class.forName(VboxTask.versionPrefix + ".IGuestFsObjInfo");
+                guestProcessInterface = Class.forName(VboxTask.versionPrefix + ".IGuestProcess");
+                guestSessionInterface = Class.forName(VboxTask.versionPrefix + ".IGuestSession");
+                copyFileFlagEnum = Class.forName(VboxTask.versionPrefix + ".CopyFileFlag");
+                //copyFileFlagEnumArray = Class.forName("[L" + VboxTask.versionPrefix +".CopyFileFlag;");
+                executeProcessFlagEnum = Class.forName(VboxTask.versionPrefix + ".ProcessCreateFlag");
+            }
 
             sessionStateEnum = Class.forName(VboxTask.versionPrefix + ".SessionState");
             lockTypeEnum = Class.forName(VboxTask.versionPrefix + ".LockType");
             directoryCreateFlagEnum = Class.forName(VboxTask.versionPrefix + ".DirectoryCreateFlag");
-            executeProcessFlagEnum = Class.forName(VboxTask.versionPrefix + ".ExecuteProcessFlag");
+
+
             additionsRunLevelTypeEnum = Class.forName(VboxTask.versionPrefix + ".AdditionsRunLevelType");
             cloneModeEnum = Class.forName(VboxTask.versionPrefix + ".CloneMode");
             cloneOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CloneOptions");
             cleanupOptionsEnum = Class.forName(VboxTask.versionPrefix + ".CleanupMode");
             directoryOpenFlagEnum = Class.forName(VboxTask.versionPrefix + ".DirectoryOpenFlag");
 
-            guestDirectoryEntryTypeEnum = Class.forName(VboxTask.versionPrefix + ".GuestDieEntryType");
+
             
             cloneOptionsEnumArray = Class.forName("[L" + VboxTask.versionPrefix +".CloneOptions;");
 

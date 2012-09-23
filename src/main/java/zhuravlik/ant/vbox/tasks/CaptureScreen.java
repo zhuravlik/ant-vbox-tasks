@@ -62,7 +62,7 @@ public class CaptureScreen extends VboxAction {
             }
 
             Object console = getConsoleMethod.invoke(session);
-            Object display = consoleDisplayField.get(console);
+            Object display = getDisplayMethod.invoke(console);
 
             Object wHolder = holderClass.newInstance();
             Object hHolder = holderClass.newInstance();

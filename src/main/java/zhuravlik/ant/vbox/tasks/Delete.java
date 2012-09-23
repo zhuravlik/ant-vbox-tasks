@@ -22,6 +22,8 @@ import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
 import zhuravlik.ant.vbox.VboxTask;
 
+import java.util.List;
+
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
 
@@ -51,7 +53,7 @@ public class Delete extends VboxAction {
             Object v2 = cleanupModeDetachAllReturnHardDisksOnly.get(null);
             
             
-            Object[] media = (Object[]) unregisterMachineMethod.invoke(machine, deleteFiles ? v2 : v1);
+            List media = (List) unregisterMachineMethod.invoke(machine, deleteFiles ? v2 : v1);
             
             if (deleteFiles)
                 machineDeleteMediaMethod.invoke(machine, media);
