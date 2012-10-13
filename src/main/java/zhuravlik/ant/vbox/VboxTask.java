@@ -47,6 +47,7 @@ public class VboxTask extends Task {
     public static String password;
     public static String versionPrefix;
     public static Object session;
+    public static Object vbManager;
     
     private List<VboxAction> actions = new ArrayList<VboxAction>();
     
@@ -80,6 +81,10 @@ public class VboxTask extends Task {
 
     public void addCreateDirectory(CreateDirectory createDirectory) {
         actions.add(createDirectory);
+    }
+
+    public void addDelete(Delete delete) {
+        actions.add(delete);
     }
     
     public void addDeleteSnapshot(DeleteSnapshot deleteSnapshot) {
@@ -173,33 +178,30 @@ public class VboxTask extends Task {
         
         try {
             Object vbm = managerCreateInstanceMethod.invoke(null, new Object[] {null});
-            Object box = managerGetVBoxMethod.invoke(vbm);
-            Object session = managerGetSessionObjectMethod.invoke(vbm);
-            
-            //List vms = (List)getMachinesMethod.invoke(box);
-            
-            /*Object neededVM = null;
-            for (Object vm: vms) {
-                String nm = (String) getMachineNameMethod.invoke(vm);
-                if (name.equals(nm)) {
-                    neededVM = vm;
+            try {
+                vbManager = vbm;
+                Object box = managerGetVBoxMethod.invoke(vbm);
+                Object session = managerGetSessionObjectMethod.invoke(vbm);
+
+                Object neededVM = findMachineMethod.invoke(box, name);
+
+                if (neededVM == null)
+                    throw new BuildException("Virtual machine [" + name + "] cannot be found");
+
+                for (VboxAction action: actions) {
+                    action.executeAction(neededVM, session);
                 }
-            } */
 
-            Object neededVM = findMachineMethod.invoke(box, name);
-            
-            if (neededVM == null)
-                throw new BuildException("Virtual machine [" + name + "] cannot be found");
-
-            for (VboxAction action: actions) {
-                action.executeAction(neededVM, session);
+                if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                    unlockMachineMethod.invoke(session);
             }
-            
-            if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
-                unlockMachineMethod.invoke(session);
+            finally {
+                managerCleanUpMethod.invoke(vbm);
+            }
         }
         catch (Exception e) {
             throw new BuildException(e);
         }
+
     }
 }

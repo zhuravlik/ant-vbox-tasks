@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import org.apache.tools.ant.BuildException;
 import zhuravlik.ant.vbox.VboxAction;
+import zhuravlik.ant.vbox.VboxTask;
 
 import static zhuravlik.ant.vbox.reflection.Fields.*;
 import static zhuravlik.ant.vbox.reflection.Methods.*;
@@ -112,10 +113,16 @@ public class Clone extends VboxAction {
             throw new BuildException("Invalid clone type " + cloneType + ", should be either linked or full");
         
         try {
-            Object vbm = managerCreateInstanceMethod.invoke(null, new Object[] {null});
+
+            if (VboxTask.vbManager == null)
+                throw new Exception("VirtualBox manager instance was not initialized");
+
+            Object vbm = VboxTask.vbManager;
             Object box = managerGetVBoxMethod.invoke(vbm);
             
-            Object newMachine = createMachineMethod.invoke(box, destination, name, osType, UUID.randomUUID().toString(), false);
+            Object newMachine = VboxTask.versionPrefix.contains("4_1")
+                ? createMachineMethod.invoke(box, destination, name, osType, UUID.randomUUID().toString(), false)
+                : createMachineMethod.invoke(box, destination, name, new ArrayList(), osType, "UUID=" + UUID.randomUUID().toString());
             
             Object cloneTypeObj = cloneMode.equals("current") ? cloneModeMachineState.get(null) :
                     (                    
@@ -136,15 +143,13 @@ public class Clone extends VboxAction {
             
             if (keep != null && keep.contains("diskname"))
                 opts.add(cloneOptionKeepDiskNames.get(null));              
-            
-            Object[] optsArr = opts.toArray();
-            
-            Object progress = cloneToMethod.invoke(machine, newMachine, cloneTypeObj, optsArr);                                                
+
+            Object progress = cloneToMethod.invoke(machine, newMachine, cloneTypeObj, opts);
             waitForCompletionMethod.invoke(progress, -1);
             
             machineSaveSettingsMethod.invoke(newMachine);
             
-            registerMachineMethod.invoke(box);
+            registerMachineMethod.invoke(box, newMachine);
         }
         catch (Exception e) {
             throw new BuildException(e);

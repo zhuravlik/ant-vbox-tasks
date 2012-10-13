@@ -35,7 +35,7 @@ import static zhuravlik.ant.vbox.reflection.Methods.*;
  */
 public class WaitForTools extends VboxAction {
     
-    int timeout;
+    int timeout = 60;
 
     public int getTimeout() {
         return timeout;
@@ -64,11 +64,18 @@ public class WaitForTools extends VboxAction {
                         unlockMachineMethod.invoke(session);
                     throw new BuildException(e.getMessage());
                 }
+                finally {
+                    if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
+                        unlockMachineMethod.invoke(session);
+                }
                 i++;
             }
 
             if (getSessionStateMethod.invoke(session) == lockedStateField.get(null))
                 unlockMachineMethod.invoke(session);
+
+            if (i == timeout)
+                throw new Exception("Timed out waiting for Guest Additions");
         }
         catch (Exception e) {
             throw new BuildException(e);

@@ -64,7 +64,8 @@ public class Methods {
     public static Method cloneToMethod;
     public static Method managerCreateInstanceMethod;
     public static Method managerGetVBoxMethod;
-    public static Method managerGetSessionObjectMethod;            
+    public static Method managerGetSessionObjectMethod;
+    public static Method managerCleanUpMethod;
     public static Method getMachinesMethod;            
     public static Method getMachineNameMethod;
     public static Method createMachineMethod;
@@ -193,6 +194,7 @@ public class Methods {
             managerCreateInstanceMethod = virtualBoxManagerClass.getMethod("createInstance", String.class);
             managerGetVBoxMethod = virtualBoxManagerClass.getMethod("getVBox");
             managerGetSessionObjectMethod = virtualBoxManagerClass.getMethod("getSessionObject");
+            managerCleanUpMethod = virtualBoxManagerClass.getMethod("cleanup");
             
             getMachinesMethod = virtualBoxInterface.getMethod("getMachines");
 
